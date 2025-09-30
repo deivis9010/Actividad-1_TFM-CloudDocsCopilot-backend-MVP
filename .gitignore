@@ -1,0 +1,68 @@
+# Node dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage
+*.lcov
+
+# Build outputs
+build/
+dist/
+.tmp/
+.temp/
+.cache/
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# OS / misc
+*.tgz
+
+# Mongo backups
+mongo-backup/
+
+# Uploads & storage (binary artifacts not for version control)
+uploads/
+storage/
+
+# Optional: lock files (keep if you want deterministic builds)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Postman local data (collections can be versioned if desired)
+.postman/
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+
+# Temporary files
+*.tmp
+*.temp
+~$*
