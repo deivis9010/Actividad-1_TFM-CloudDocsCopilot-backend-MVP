@@ -1,5 +1,5 @@
 import express from 'express';
-import mongoose from 'mongoose';
+import { connectMongo } from './configurations/database-config/mongo.js';
 import cors from 'cors';
 import authRoutes from './routes/auth.routes.js';
 import documentRoutes from './routes/document.routes.js';
@@ -18,13 +18,15 @@ app.get('/api', (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/clouddocs';
+async function start() {
+  try {
+    await connectMongo();
+    app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+  } catch (err) {
+    console.error('Startup failed. Exiting process.');
+    process.exit(1);
+  }
+}
 
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('MongoDB connected');
-  })
-  .catch(err => console.error('MongoDB connection error:', err));
-
-app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+start();
 
