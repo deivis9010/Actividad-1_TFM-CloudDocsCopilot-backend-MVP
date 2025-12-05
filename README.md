@@ -74,6 +74,9 @@ BCRYPT_SALT_ROUNDS=10
 | `npm start` | Ejecuta el servidor en modo producción      |
 | `npm run dev` | Inicia con Nodemon (recarga en caliente)  |
 | `npm run format` | Formatea el código con Prettier        |
+| `npm test` | Ejecuta todos los tests con Jest           |
+| `npm run test:watch` | Ejecuta tests en modo watch         |
+| `npm run test:coverage` | Genera reporte de cobertura      |
 
 ## Requisitos previos
 
@@ -127,6 +130,59 @@ Rutas inexistentes retornan:
 ## Subida de archivos
 
 Se utiliza `multer` para manejar cargas. Los archivos se almacenan en `uploads/` y su metadata en MongoDB. Un servicio adicional puede moverlos a `storage/` (según implementación de negocio).
+
+## Testing
+
+El proyecto incluye una suite completa de tests con **Jest** y **Supertest**.
+
+### Estructura de tests
+
+```
+tests/
+├── integration/     # Tests de endpoints completos
+├── unit/           # Tests unitarios de servicios
+├── setup.js        # Configuración global
+└── README.md       # Documentación detallada
+```
+
+### Ejecutar tests
+
+```bash
+# Todos los tests
+npm test
+
+# Con cobertura de código
+npm run test:coverage
+
+# En modo watch
+npm run test:watch
+
+# Solo tests de integración
+npm test -- tests/integration
+
+# Solo tests unitarios
+npm test -- tests/unit
+```
+
+### Configuración de tests
+
+Los tests usan una base de datos separada. Configurar en `.env.test`:
+
+```
+TEST_MONGO_URI=mongodb://127.0.0.1:27017/clouddocs-test
+JWT_SECRET=test-secret-key
+```
+
+**Importante:** Asegúrate de que MongoDB esté corriendo antes de ejecutar los tests.
+
+Para más detalles, consulta [tests/README.md](tests/README.md).
+
+## Documentación API (Swagger)
+
+La API está documentada con OpenAPI/Swagger. Una vez iniciado el servidor:
+
+- **Swagger UI:** http://localhost:4000/api/docs
+- **JSON spec:** http://localhost:4000/api/docs.json
 
 ## Estilo de código
 
