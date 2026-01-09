@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from 'cookie-parser';
+import { doubleCsrf } from 'csrf-csrf';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi.json';
 import authRoutes from './routes/auth.routes';
@@ -62,6 +63,26 @@ app.use(cors(getCorsOptions()));
 // Middleware para parsear cookies
 app.use(cookieParser());
 
+// Configuración de protección CSRF
+const csrfProtection = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET || 'default-csrf-secret-change-in-production',
+  cookieName: '__Host-psifi.x-csrf-token',
+  cookieOptions: {
+    sameSite: 'strict',
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+  },
+  size: 64,
+  ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
+  getSessionIdentifier: (req: Request) => {
+    // Usar la IP del cliente como identificador de sesión
+    return req.ip || 'anonymous';
+  },
+});
+
+const doubleCsrfProtection = csrfProtection.doubleCsrfProtection;
+
 // Middleware de parsing del body
 app.use(express.json());
 
@@ -77,6 +98,17 @@ app.use(mongoSanitize({
 
 // Aplica limitación de tasa general a todas las rutas
 app.use(generalRateLimiter);
+
+// Endpoint para obtener el token CSRF
+app.get('/api/csrf-token', (req: Request, res: Response) => {
+  const token = csrfProtection.generateCsrfToken(req, res);
+  res.json({ token });
+});
+
+// Aplicar protección CSRF solo en producción y desarrollo (no en tests)
+if (process.env.NODE_ENV !== 'test') {
+  app.use('/api', doubleCsrfProtection);
+}
 
 // Rutas de la API
 app.use('/api/auth', authRoutes);
