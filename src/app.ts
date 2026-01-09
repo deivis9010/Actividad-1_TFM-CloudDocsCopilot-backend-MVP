@@ -78,6 +78,9 @@ const csrfProtection = doubleCsrf({
 
 const doubleCsrfProtection = csrfProtection.doubleCsrfProtection;
 
+// Exportar el middleware CSRF para usarlo en las rutas
+export const csrfProtectionMiddleware = doubleCsrfProtection;
+
 // Aplicar protección CSRF INMEDIATAMENTE después de cookieParser y body parser
 // Esto protege TODAS las rutas que usan cookies (desactivado en tests vía ignoredMethods)
 app.use(doubleCsrfProtection);

@@ -3,6 +3,7 @@ import * as folderController from '../controllers/folder.controller';
 import authMiddleware from '../middlewares/auth.middleware';
 import { validateOrganizationMembership } from '../middlewares/organization.middleware';
 import { createResourceRateLimiter } from '../middlewares/rate-limit.middleware';
+import { csrfProtectionMiddleware } from '../app';
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.use(authMiddleware);
  */
 router.post(
   '/',
+  csrfProtectionMiddleware,
   createResourceRateLimiter,
   validateOrganizationMembership('body'),
   folderController.create
@@ -49,20 +51,20 @@ router.get('/:id/contents', folderController.getContents);
  * @desc    Comparte una carpeta con otro usuario
  * @access  Folder owner
  */
-router.post('/:id/share', folderController.share);
+router.post('/:id/share', csrfProtectionMiddleware, folderController.share);
 
 /**
  * @route   PATCH /api/folders/:id
  * @desc    Renombra una carpeta
  * @access  Folder owner
  */
-router.patch('/:id', folderController.rename);
+router.patch('/:id', csrfProtectionMiddleware, folderController.rename);
 
 /**
  * @route   DELETE /api/folders/:id
  * @desc    Elimina una carpeta
  * @access  Folder owner
  */
-router.delete('/:id', folderController.remove);
+router.delete('/:id', csrfProtectionMiddleware, folderController.remove);
 
 export default router;
