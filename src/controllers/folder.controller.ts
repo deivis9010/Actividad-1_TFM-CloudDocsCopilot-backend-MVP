@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import * as folderService from '../services/folder.service';
 import HttpError from '../models/error.model';
+import mongoose from 'mongoose';
 
 /**
  * Controlador para crear una nueva carpeta
@@ -50,10 +51,16 @@ export async function getUserTree(req: AuthRequest, res: Response, next: NextFun
     if (!organizationId) {
       return next(new HttpError(400, 'Organization ID is required'));
     }
+
+    if (typeof organizationId !== 'string' || !mongoose.Types.ObjectId.isValid(organizationId)) {
+      return next(new HttpError(400, 'Invalid Organization ID'));
+    }
+
+    const normalizedOrganizationId = new mongoose.Types.ObjectId(organizationId).toString();
     
     const tree = await folderService.getUserFolderTree({
       userId: req.user!.id,
-      organizationId
+      organizationId: normalizedOrganizationId
     });
     
     if (!tree) {
