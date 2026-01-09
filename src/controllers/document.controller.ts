@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
 import path from 'path';
+import mongoose from 'mongoose';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import * as documentService from '../services/document.service';
 import HttpError from '../models/error.model';
@@ -66,6 +67,10 @@ export async function getRecent(req: AuthRequest, res: Response, next: NextFunct
     
     if (!organizationId) {
       return next(new HttpError(400, 'Organization ID is required'));
+    }
+
+    if (typeof organizationId !== 'string' || !mongoose.Types.ObjectId.isValid(organizationId)) {
+      return next(new HttpError(400, 'Invalid Organization ID'));
     }
     
     const docs = await documentService.getUserRecentDocuments({

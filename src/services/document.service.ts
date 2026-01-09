@@ -304,7 +304,7 @@ export async function getUserRecentDocuments({
   limit = 10
 }: GetRecentDocumentsDto): Promise<IDocument[]> {
   const documents = await DocumentModel.find({
-    organization: organizationId,
+    organization: { $eq: organizationId },
     $or: [
       { uploadedBy: userId },
       { sharedWith: userId }
