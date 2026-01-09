@@ -56,14 +56,17 @@ app.use(helmet({
 app.use(cors(getCorsOptions()));
 
 // Parsear cookies y body JSON
-// codeql[js/missing-token-validation] CSRF protection is applied immediately after via csrfProtectionMiddleware
+// codeql[js/missing-token-validation] FALSE POSITIVE - See CSRF-PROTECTION-EXPLANATION.md
+// CSRF protection is properly implemented using csrf-csrf middleware (next line)
+// CodeQL doesn't recognize csrf-csrf package but it provides equivalent protection to csurf
 app.use(cookieParser());
 app.use(express.json());
 
-// Aplicar protección CSRF INMEDIATAMENTE después de cookieParser y body parser
-// Esto protege TODAS las rutas que usan cookies (desactivado en tests vía ignoredMethods)
-// CSRF protection is implemented using csrf-csrf (Double Submit Cookie pattern)
-// which provides equivalent security to csurf. The middleware validates CSRF tokens on all state-changing requests.
+// ✅ PROTECCIÓN CSRF APLICADA AQUÍ
+// Implementación: csrf-csrf con patrón Double Submit Cookie
+// Ver documentación completa en: CSRF-PROTECTION-EXPLANATION.md
+// Protege POST/PUT/PATCH/DELETE con validación de tokens en cookies y headers
+// Configuración: __Host-psifi.x-csrf-token (sameSite=strict, httpOnly=true, secure en prod)
 app.use(csrfProtectionMiddleware);
 
 // Protección contra inyección NoSQL
