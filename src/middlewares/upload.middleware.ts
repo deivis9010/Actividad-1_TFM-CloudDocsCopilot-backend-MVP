@@ -25,9 +25,19 @@ const ALLOWED = (process.env.ALLOWED_MIME_TYPES || 'application/pdf,image/png,im
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),
   filename: (_req, file, cb) => {
+    // Extraer extensión de forma segura
     const ext = path.extname(file.originalname || '').toLowerCase();
+    
+    // Validar que la extensión solo contiene caracteres permitidos
+    if (ext && !/^\.[\w-]+$/.test(ext)) {
+      return cb(new Error('Invalid file extension') as any, '');
+    }
+    
+    // Generar nombre aleatorio seguro (solo UUID + extensión validada)
     const base = crypto.randomUUID();
-    cb(null, `${base}${ext}`);
+    const safeFilename = `${base}${ext}`;
+    
+    cb(null, safeFilename);
   }
 });
 

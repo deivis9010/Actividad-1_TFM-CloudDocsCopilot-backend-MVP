@@ -436,9 +436,22 @@ export async function uploadDocument({
   }
 
   // Construir path en el sistema de archivos
-  const sanitizedFilename = sanitizePathOrThrow(file.filename);
-  const documentPath = `${folder.path}/${sanitizedFilename}`;
+  // Validar y sanitizar el filename primero (dato controlado por usuario)
+  if (!file.filename || typeof file.filename !== 'string') {
+    throw new HttpError(400, 'Invalid filename');
+  }
   
+  const uploadsRoot = path.join(process.cwd(), 'uploads');
+  const sanitizedFilename = sanitizePathOrThrow(file.filename);
+  
+  // Construir tempPath y validar que está dentro del directorio uploads
+  const tempPath = path.join(uploadsRoot, sanitizedFilename);
+  if (!isPathWithinBase(tempPath, uploadsRoot)) {
+    throw new HttpError(400, 'Invalid temporary upload path');
+  }
+  
+  // Construir paths de destino
+  const documentPath = `${folder.path}/${sanitizedFilename}`;
   const storageRoot = path.join(process.cwd(), 'storage');
   
   // Sanitizar org.slug y folder.path para prevenir path traversal
@@ -454,15 +467,6 @@ export async function uploadDocument({
     sanitizedFilename
   );
 
-  // Mover archivo desde uploads/ a la estructura organizada
-  const uploadsRoot = path.join(process.cwd(), 'uploads');
-  const tempPath = path.join(uploadsRoot, sanitizedFilename);
-
-  // Validar que el archivo temporal está dentro del directorio uploads
-  if (!isPathWithinBase(tempPath, uploadsRoot)) {
-    throw new HttpError(400, 'Invalid temporary upload path');
-  }
-  
   // Validar que el path de destino está dentro del directorio storage
   if (!isPathWithinBase(physicalPath, storageRoot)) {
     throw new HttpError(400, 'Invalid destination path');
