@@ -6,6 +6,7 @@ import authMiddleware from '../middlewares/auth.middleware';
 const router = express.Router();
 
 // Aplica limitación de tasa estricta a endpoints de autenticación para prevenir ataques de fuerza bruta
+// CSRF protection is applied globally in app.ts
 router.post('/register', authRateLimiter, authController.register);
 router.post('/login', authRateLimiter, authController.login);
 router.post('/logout', authMiddleware, authController.logout);

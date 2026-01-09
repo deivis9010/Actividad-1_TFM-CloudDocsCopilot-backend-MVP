@@ -10,27 +10,26 @@ import authRoutes from './routes/auth.routes';
 import documentRoutes from './routes/document.routes';
 import folderRoutes from './routes/folder.routes';
 import userRoutes from './routes/user.routes';
+import organizationRoutes from './routes/organization.routes';
 import HttpError from './models/error.model';
 import { errorHandler } from './middlewares/error.middleware';
 import { generalRateLimiter } from './middlewares/rate-limit.middleware';
 import { getCorsOptions } from './configurations/cors-config';
+import { csrfProtectionMiddleware, generateCsrfToken } from './middlewares/csrf.middleware';
 
 const app = express();
 
-// Configuración de proxy confiable (importante si está detrás de un proxy inverso/balanceador de carga)
-// Esto asegura que la IP real del cliente sea correctamente identificada
+// Configurar proxy confiable para obtener IP real del cliente
 app.set('trust proxy', 1);
 
-// Middlewares de seguridad
-// Helmet ayuda a proteger aplicaciones Express estableciendo varios headers HTTP
+// Seguridad: Headers HTTP con Helmet
 app.use(helmet({
-  // Content Security Policy - ayuda a prevenir ataques XSS
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], // Requerido para Swagger UI
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Requerido para Swagger UI
-      imgSrc: ["'self'", "data:", "https:"], // Permite imágenes propias, URIs de datos y HTTPS
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
     },
   },
   // X-Frame-Options - previene ataques de clickjacking
@@ -53,16 +52,22 @@ app.use(helmet({
   hidePoweredBy: true,
 }));
 
-// Configuración CORS - ajustes de seguridad específicos por entorno
-// Desarrollo: Permite orígenes localhost automáticamente
-// Producción: Solo permite dominios explícitamente autorizados desde la variable ALLOWED_ORIGINS
+// CORS: Configuración por entorno (ver ALLOWED_ORIGINS)
 app.use(cors(getCorsOptions()));
 
-// Middleware para parsear cookies
+// Parsear cookies y body JSON
+// codeql[js/missing-token-validation] FALSE POSITIVE - See CSRF-PROTECTION-EXPLANATION.md
+// CSRF protection is properly implemented using csrf-csrf middleware (next line)
+// CodeQL doesn't recognize csrf-csrf package but it provides equivalent protection to csurf
 app.use(cookieParser());
-
-// Middleware de parsing del body
 app.use(express.json());
+
+// ✅ PROTECCIÓN CSRF APLICADA AQUÍ
+// Implementación: csrf-csrf con patrón Double Submit Cookie
+// Ver documentación completa en: CSRF-PROTECTION-EXPLANATION.md
+// Protege POST/PUT/PATCH/DELETE con validación de tokens en cookies y headers
+// Configuración: __Host-psifi.x-csrf-token (sameSite=strict, httpOnly=true, secure en prod)
+app.use(csrfProtectionMiddleware);
 
 // Protección contra inyección NoSQL
 // Sanitiza los datos de entrada eliminando caracteres especiales de MongoDB ($, .)
@@ -74,11 +79,18 @@ app.use(mongoSanitize({
   // Opción adicional: onSanitize se puede usar para logging cuando se detecta un intento de inyección
 }));
 
-// Aplica limitación de tasa general a todas las rutas
+// Rate limiting
 app.use(generalRateLimiter);
 
-// Rutas de la API
+// Endpoint: CSRF token
+app.get('/api/csrf-token', (req: Request, res: Response) => {
+  const token = generateCsrfToken(req, res);
+  res.json({ token });
+});
+
+// Rutas API
 app.use('/api/auth', authRoutes);
+app.use('/api/organizations', organizationRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/folders', folderRoutes);
 app.use('/api/users', userRoutes);
@@ -87,17 +99,17 @@ app.use('/api/users', userRoutes);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec, { explorer: true }));
 app.get('/api/docs.json', (_req: Request, res: Response) => res.json(openapiSpec));
 
-// Ruta raíz de la API
+// Ruta raíz
 app.get('/api', (_req: Request, res: Response) => {
   res.json({ message: 'API running' });
 });
 
-// Captura 404 (después de todas las rutas definidas y antes del manejador de errores)
+// 404 handler
 app.use((_req: Request, _res: Response, next: NextFunction) => {
   next(new HttpError(404, 'Route not found'));
 });
 
-// Manejador global de errores
+// Error handler
 app.use(errorHandler);
 
 export default app;

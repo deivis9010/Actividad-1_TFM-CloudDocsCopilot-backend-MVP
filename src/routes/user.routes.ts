@@ -5,6 +5,7 @@ import * as userController from '../controllers/user.controller';
 
 const router = express.Router();
 
+// CSRF protection is applied globally in app.ts
 router.get('/', authenticateToken, requireAdmin, userController.list);
 router.patch('/:id/activate', authenticateToken, requireAdmin, userController.activate);
 router.patch('/:id/deactivate', authenticateToken, requireAdmin, userController.deactivate);
