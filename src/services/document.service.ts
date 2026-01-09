@@ -433,7 +433,7 @@ export async function uploadDocument({
   );
 
   // Mover archivo desde uploads/ a la estructura organizada
-  const tempPath = path.join(process.cwd(), 'uploads', file.filename);
+  const tempPath = path.join(process.cwd(), 'uploads', sanitizedFilename);
   
   // Asegurar que el directorio existe
   const dirPath = path.dirname(physicalPath);
