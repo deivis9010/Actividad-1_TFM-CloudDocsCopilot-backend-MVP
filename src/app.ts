@@ -61,6 +61,8 @@ app.use(express.json());
 
 // Aplicar protección CSRF INMEDIATAMENTE después de cookieParser y body parser
 // Esto protege TODAS las rutas que usan cookies (desactivado en tests vía ignoredMethods)
+// lgtm[js/missing-token-validation] - CSRF protection is implemented using csrf-csrf (Double Submit Cookie pattern)
+// which provides equivalent security to csurf. The middleware validates CSRF tokens on all state-changing requests.
 app.use(csrfProtectionMiddleware);
 
 // Protección contra inyección NoSQL

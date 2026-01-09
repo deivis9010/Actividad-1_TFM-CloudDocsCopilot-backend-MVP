@@ -4,7 +4,6 @@ import { validateOrganizationMembership } from '../middlewares/organization.midd
 import * as documentController from '../controllers/document.controller';
 import { upload } from '../middlewares/upload.middleware';
 import { uploadRateLimiter } from '../middlewares/rate-limit.middleware';
-import { csrfProtectionMiddleware } from '../middlewares/csrf.middleware';
 
 const router = express.Router();
 
@@ -18,9 +17,9 @@ router.use(authMiddleware);
  * @desc    Sube un nuevo documento
  * @access  Authenticated users (organization members)
  */
+// CSRF protection is applied globally in app.ts
 router.post(
   '/upload',
-  csrfProtectionMiddleware,
   uploadRateLimiter,
   upload.single('file'),
   validateOrganizationMembership('body'),
@@ -60,27 +59,27 @@ router.get('/download/:id', documentController.download);
  * @desc    Comparte un documento con otros usuarios
  * @access  Document owner
  */
-router.post('/:id/share', csrfProtectionMiddleware, documentController.share);
+router.post('/:id/share', documentController.share);
 
 /**
  * @route   POST /api/documents/:id/move
  * @desc    Mueve un documento a otra carpeta
  * @access  Document owner
  */
-router.post('/:id/move', csrfProtectionMiddleware, documentController.move);
+router.post('/:id/move', documentController.move);
 
 /**
  * @route   POST /api/documents/:id/copy
  * @desc    Copia un documento a otra carpeta
  * @access  Document owner
  */
-router.post('/:id/copy', csrfProtectionMiddleware, documentController.copy);
+router.post('/:id/copy', documentController.copy);
 
 /**
  * @route   DELETE /api/documents/:id
  * @desc    Elimina un documento
  * @access  Document owner
  */
-router.delete('/:id', csrfProtectionMiddleware, documentController.remove);
+router.delete('/:id', documentController.remove);
 
 export default router;

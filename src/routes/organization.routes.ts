@@ -6,7 +6,6 @@ import {
   validateOrganizationLimits
 } from '../middlewares/organization.middleware';
 import * as organizationController from '../controllers/organization.controller';
-import { csrfProtectionMiddleware } from '../middlewares/csrf.middleware';
 
 const router = Router();
 
@@ -20,7 +19,8 @@ router.use(authenticate);
  * @desc    Crea una nueva organización
  * @access  Authenticated users
  */
-router.post('/', csrfProtectionMiddleware, organizationController.createOrganization);
+// CSRF protection is applied globally in app.ts
+router.post('/', organizationController.createOrganization);
 
 /**
  * @route   GET /api/organizations
@@ -43,7 +43,6 @@ router.get('/:id', organizationController.getOrganization);
  */
 router.put(
   '/:id',
-  csrfProtectionMiddleware,
   validateOrganizationMembership('params'),
   validateOrganizationOwnership,
   organizationController.updateOrganization
@@ -56,7 +55,6 @@ router.put(
  */
 router.delete(
   '/:id',
-  csrfProtectionMiddleware,
   validateOrganizationMembership('params'),
   validateOrganizationOwnership,
   organizationController.deleteOrganization
@@ -76,7 +74,6 @@ router.get('/:id/members', organizationController.listMembers);
  */
 router.post(
   '/:id/members',
-  csrfProtectionMiddleware,
   validateOrganizationMembership('params'),
   validateOrganizationOwnership,
   validateOrganizationLimits,
@@ -90,7 +87,6 @@ router.post(
  */
 router.delete(
   '/:id/members/:userId',
-  csrfProtectionMiddleware,
   validateOrganizationMembership('params'),
   validateOrganizationOwnership,
   organizationController.removeMember
