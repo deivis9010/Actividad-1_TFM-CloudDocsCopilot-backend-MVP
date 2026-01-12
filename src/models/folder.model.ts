@@ -74,29 +74,36 @@ const folderSchema = new Schema<IFolder>(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, 'Folder name is required'],
       trim: true,
+      minlength: [1, 'Folder name must be at least 1 character'],
+      maxlength: [255, 'Folder name cannot exceed 255 characters'],
     },
     displayName: {
       type: String,
       trim: true,
+      minlength: [1, 'Display name must be at least 1 character'],
+      maxlength: [255, 'Display name cannot exceed 255 characters'],
     },
     type: {
       type: String,
-      enum: ['root', 'folder', 'shared'],
+      enum: {
+        values: ['root', 'folder', 'shared'],
+        message: '{VALUE} is not a valid folder type',
+      },
       default: 'folder',
-      required: true,
+      required: [true, 'Folder type is required'],
     },
     owner: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: [true, 'Folder owner is required'],
       index: true,
     },
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'Organization',
-      required: true,
+      required: [true, 'Organization is required'],
       index: true,
     },
     parent: {
@@ -112,8 +119,9 @@ const folderSchema = new Schema<IFolder>(
     },
     path: {
       type: String,
-      required: true,
+      required: [true, 'Folder path is required'],
       trim: true,
+      maxlength: [1024, 'Folder path cannot exceed 1024 characters'],
     },
     documents: [
       {
@@ -136,8 +144,11 @@ const folderSchema = new Schema<IFolder>(
         },
         role: {
           type: String,
-          enum: ['viewer', 'editor', 'owner'],
-          required: true,
+          enum: {
+            values: ['viewer', 'editor', 'owner'],
+            message: '{VALUE} is not a valid permission role',
+          },
+          required: [true, 'Permission role is required'],
         },
       },
     ],

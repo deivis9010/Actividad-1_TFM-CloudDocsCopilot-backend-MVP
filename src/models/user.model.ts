@@ -34,10 +34,39 @@ export interface IUser extends Document {
  */
 const userSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    name: {
+      type: String,
+      required: [true, 'User name is required'],
+      trim: true,
+      minlength: [2, 'User name must be at least 2 characters'],
+      maxlength: [100, 'User name cannot exceed 100 characters'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      trim: true,
+      lowercase: true,
+      maxlength: [255, 'Email cannot exceed 255 characters'],
+      match: [
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        'Please provide a valid email address',
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [8, 'Password must be at least 8 characters'],
+      maxlength: [128, 'Password cannot exceed 128 characters'],
+    },
+    role: {
+      type: String,
+      enum: {
+        values: ['user', 'admin'],
+        message: '{VALUE} is not a valid user role',
+      },
+      default: 'user',
+    },
     active: { type: Boolean, default: true },
     tokenVersion: { type: Number, default: 0 },
     lastPasswordChange: { type: Date },
