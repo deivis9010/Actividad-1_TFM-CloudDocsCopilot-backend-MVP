@@ -20,6 +20,10 @@ export interface IUser extends Document {
   storageUsed: number;
   createdAt: Date;
   updatedAt: Date;
+  loginAttempts?: number;
+  lockUntil?: Date | null;
+  refreshTokenHash?: string | null;
+  refreshTokenExpiresAt?: Date | null;
 }
 
 /**
@@ -55,6 +59,10 @@ const userSchema = new Schema<IUser>(
       default: 0,
       min: [0, 'Storage used cannot be negative'],
     },
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null },
+    refreshTokenHash: { type: String, default: null },
+    refreshTokenExpiresAt: { type: Date, default: null },
   },
   {
     timestamps: true,
